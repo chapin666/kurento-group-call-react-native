@@ -1,20 +1,22 @@
 import React, { Component, PropTypes } from 'react';
-import { Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 
 export default class RoomScreen extends Component {
     
     render() {
         return (
-            <Text style={}>Welcome to LYCAM+</Text>
+            <View style={styles.container}>
+                <Text>Welcome to LYCAM+</Text>
+            </View>
         );
     }
 
 }
 
 const styles = StyleSheet.create({
-    welcome: {
+   container: {
         flex: 1,
-        alignItems: 'center',
+		alignItems: 'center',
 		justifyContent: 'center',
     }
 });
