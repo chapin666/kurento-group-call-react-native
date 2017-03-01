@@ -13,8 +13,7 @@ import usernameImage from '../images/username.png';
 export default class Form extends Component {
     render() {
         return (
-            <KeyboardAvoidingView behavior='padding'
-                style={styles.container}>
+            <KeyboardAvoidingView behavior='padding' style={styles.container}>
 
                 <UserInput source={usernameImage}
                     secureTextEntry={false}

@@ -46,7 +46,7 @@ export default class ButtonSubmit extends Component {
 
         setTimeout(() => this._onGrow(), 2000);
         setTimeout(() => {
-            Actions.roomScreen();
+            Actions.videoScreen();
             this.setState({isLoading: false});
             this.buttonAnimated.setValue(0);
             this.growAnimated.setValue(0);
