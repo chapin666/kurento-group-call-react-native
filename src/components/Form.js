@@ -1,9 +1,7 @@
-import React, {Component, PropTypes} from 'react';
-import Dimensions from 'Dimensions';
+import React, { Component } from 'react';
 import {
     StyleSheet,
-    KeyboardAvoidingView,
-    View,
+    KeyboardAvoidingView
 } from 'react-native';
 
 import UserInput from './UserInput';
@@ -15,19 +13,23 @@ export default class Form extends Component {
         return (
             <KeyboardAvoidingView behavior='padding' style={styles.container}>
 
-                <UserInput source={usernameImage}
+                <UserInput
+                    source={usernameImage}
                     secureTextEntry={false}
                     placeholder='用户名'
                     autoCapitalize={'none'}
                     returnKeyType={'done'}
-                    autoCorrect={false} />
+                    autoCorrect={false} 
+                />
 
-                <UserInput source={usernameImage}
+                <UserInput
+                    source={usernameImage}
                     secureTextEntry={false}
                     placeholder='房间号'
                     returnKeyType={'done'}
                     autoCapitalize={'none'}
-                    autoCorrect={false} />
+                    autoCorrect={false} 
+                />
 
             </KeyboardAvoidingView>
         );

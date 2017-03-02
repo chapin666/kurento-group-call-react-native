@@ -1,7 +1,7 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 
-import {fetchMeetups} from '../constants/api';
+import { fetchMeetups } from '../constants/api';
 
 export default class RoomScreen extends Component {
     static defaultProps = {
@@ -14,9 +14,9 @@ export default class RoomScreen extends Component {
     }
 
     async componentDidMount() {
-        this.setState({loading: true});
+        this.setState({ loading: true });
         const data = await this.props.fetchMeetups();
-        setTimeout(() => this.setState({loading: false, meetups: data.meetups}), 2000);
+        setTimeout(() => this.setState({ loading: false, meetups: data.meetups }), 2000);
     }
 
     render() {

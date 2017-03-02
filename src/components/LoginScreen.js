@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import Wallpager from './Wallpaper';
 import Logo from './Logo';
 import Form from './Form';

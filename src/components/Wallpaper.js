@@ -1,5 +1,5 @@
-import React, { Component, PropTypes } from 'react';
-import Demesions from 'Dimensions';
+import React, { Component } from 'react';
+
 import {
     StyleSheet,
     Image,

@@ -15,14 +15,16 @@ export default class UserInput extends Component {
                 
                 <Image source={this.props.source} style={styles.inlineImg} />
 
-                <TextInput style={styles.input}
+                <TextInput
+                    style={styles.input}
                     placeholder={this.props.placeholder}
                     secureTextEntry={this.props.secureTextEntry}
                     autoCorrect={this.props.autoCorrect}
                     autoCapitalize={this.props.autoCapitalize}
                     returnKeyType={this.props.returnKeyType}
                     placeholderTextColor='white'
-                    underlineColorAndroid='transparent' />
+                    underlineColorAndroid='transparent' 
+                />
             </View>
         );
     }
@@ -40,7 +42,6 @@ UserInput.PropTypes = {
 
 
 const DEVICE_WIDTH = Dimensions.get('window').width;
-const DEVICE_HEIGHT = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
     inputWapper: {

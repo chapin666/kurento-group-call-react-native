@@ -1,10 +1,9 @@
 
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import {
     StyleSheet,
     View,
-    Text,
-    Image,
+    Image
 } from 'react-native';
 
 import logoImg from '../images/logo.png';
@@ -13,7 +12,7 @@ export default class Logo extends Component {
     render() {
         return (
             <View style={styles.container}>
-                <Image source={logoImg}  resizeMode='contain' />
+                <Image source={logoImg} resizeMode='contain' />
             </View>
         );
     }
