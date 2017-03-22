@@ -3,10 +3,21 @@ import {
     RTCPeerConnection,
     MediaStreamTrack,
     getUserMedia,
+    RTCSessionDescription
 } from 'react-native-webrtc';
 
-const PC_PEERS = {};
+
+let pc = null;
 const ICE_CONFIG = { iceServers: [{ url: 'stun:47.91.149.159:3478' }] };
+
+
+export function startCommunication(_sendMessage, _name, callback) {
+    getLocalStream(true, stream => {
+        var pc = createPC(_sendMessage, _name, true, stream);
+        callback(stream, pc);
+    });
+}
+
 
 export function getLocalStream(isFront, callback) {
     MediaStreamTrack.getSources(sourceInfos => {
@@ -29,23 +40,13 @@ export function getLocalStream(isFront, callback) {
             facingMode: (isFront ? 'user' : 'environment'),
             optional: (videoSourceId ? [{ sourceId: videoSourceId }] : [])
         }, (stream) => {
-            console.log('getUserMedia:', stream);
             callback(stream);
         }, logError);
     });
 }
 
-export function createPC(socketId, isOffer) {
-    const pc = new RTCPeerConnection(ICE_CONFIG);
-    PC_PEERS[socketId] = pc;
-
-
-    pc.onicecandidate = (event) => {
-        console.log('onicecandidate:', event.candidate);
-        if (event.candidate) {
-            
-        }
-    };
+export function createPC(sendMessage, name, isOffer, localStream, callback) {
+    pc = new RTCPeerConnection(ICE_CONFIG);
 
     pc.onnegotiationneeded = () => {
         console.log('onnegotiationneeded');
@@ -54,76 +55,63 @@ export function createPC(socketId, isOffer) {
         }
     };
 
+    pc.onicecandidate = (event) => {
+        if (event.candidate) {
+            var msg = {
+                'id': 'onIceCandidate',
+                'candidate': event.candidate,
+                'name': name
+            };
+            sendMessage(msg);
+        }
+    } 
+
     pc.oniceconnectionstatechange = (event) => {
         console.log('oniceconnectionstatechange:', event.target.iceConnectionState);
-        if (event.target.iceConnectionState === 'completed') {
-            setTimeout(() => {
-                getStatus();
-            }, 1000);
-        }
-        if (event.target.iceConnectionState === 'connected') {
-            createDataChannel();
-        }
     };
-
 
     pc.onsignalingstatechange = (event) => {
         console.log('onsignalingstatechange: ', event.target.signalingState);
     };
 
-
-    pc.onaddstream = (event) => {
-        console.log('onaddstream', event.stream);
-    };
-
-    pc.onremovestream = (event) => {
-        console.log('onremovestream', event.stream);
-    };
-
     pc.addStream(localStream);
-
 
     function createOffer() {
         pc.createOffer(desc => {
-            console.log('createOffer', desc);
             pc.setLocalDescription(desc, () => {
-                console.log('setLocalDescription', pc.localDescription);
+                console.log(pc.localDescription);
+                var msg = {
+                    'id': 'receiveVideoFrom',
+                    'sender': name,
+                    'sdpOffer': pc.localDescription.sdp
+                };
+                sendMessage(msg);
             }, logError);
         }, logError);
     }
 
-    function createDataChannel() {
-        if (pc.textDataChannel) {
-            return; 
-        }
-        const dataChannel = pc.createDataChannel('text');
-        dataChannel.onerror = (error) => {
-            console.log('dataChannel.onerror: ', error);
-        };
-        dataChannel.onmessage = (event) => {
-            console.log('dataChannel.onmessage: ', event.data);
-        };
-        dataChannel.onopen = () => {
-            console.log('dataChannel.open');
-        }
-        dataChannel.onclose = () => {
-            console.log('dataChannel.onclose');
-        };
-        pc.textDataChannel = dataChannel;
-    }
-
-    function getStatus() {
-        const peer = PC_PEERS[Object.keys(PC_PEERS)[0]];
-        if (peer.getRemoteStreams()[0] && peer.getRemoteStreams()[0].getAudioTracks()[0]) {
-            const track = peer.getRemoteStreams()[0].getAudioTracks()[0];
-            console.log('track', track);
-            peer.getStatus(track, report => {
-                console.log('getStats report', report);
-            }, logError);
-        }
-    }
-
     return pc;
+}
+
+
+export function addIceCandidate(candidate) {
+    console.log('received ICE');
+    if (pc) {
+        pc.addIceCandidate(candidate);
+    } else {
+        console.log('pc.addIceCandidate failed');
+    }
+}
+
+export function ProcessAnswer(sdp, callback) {
+    var answer = {
+        'type': 'answer',
+        'sdp': sdp
+    };
+    if (pc) {
+        pc.setRemoteDescription(new RTCSessionDescription(answer));
+        callback();
+    }
 }
 
 

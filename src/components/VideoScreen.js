@@ -6,23 +6,24 @@ import {
 } from 'react-native';
 
 import {
-    RTCView
+    RTCView,
+    RTCSessionDescription,
+    RTCIceCandidate
 } from 'react-native-webrtc';
 
-import { getLocalStream, createPC } from '../utils/webrtc-utils';
+import { startCommunication, addIceCandidate, ProcessAnswer } from '../utils/webrtc-utils';
 import UserList from './UserList';
 
+const WSS_CLIENT_SERVER = 'ws://192.168.1.115:8080/groupcall';
+
 let socket = null;
-const WSS_CLIENT_SERVER = 'ws://47.91.149.159:9000/one2one';
 
 function sendMessage(message) {
     var jsonMessage = JSON.stringify(message);
-	console.log('Senging message: ' + jsonMessage);
     if (socket) {
 	    socket.send(jsonMessage);
     }
 }
-
 
 export default class RoomScreen extends Component {
 
@@ -31,40 +32,40 @@ export default class RoomScreen extends Component {
 
         this.state = {
             videoURL: null,
+            remoteURL: null,
         };
     }
 
     componentDidMount () {
 
-        //socket = new WebSocket(WSS_CLIENT_SERVER);
-
-        socket = new WebSocket(WSS_CLIENT_SERVER);
+        socket = new WebSocket(WSS_CLIENT_SERVER, {
+            rejectUnauthorized: false
+        });
 
         socket.onopen = () => {
-            console.log('connected');
-            
-            let message = {
-               id : 'register',
-               name : 'chapin'
-            };  
+            var message = {
+                id : 'joinRoom',
+                name : 'zhangsan',
+                room : '8888',
+                presenter: true
+            };
             sendMessage(message);
-        }
+        };
 
-        socket.onerror = (error) => {
-            console.log(error);
-        }
-        
-        getLocalStream(true, stream => {
-            localStream = stream;
-            console.log(stream.toURL());
-            this.setState({ videoURL: stream.toURL() });
-        });
+        socket.onerror = (err) => {
+            console.log(err);
+        };
+
+
+        socket.onmessage = message => {
+            var parsedMessage = JSON.parse(message.data);
+            this.messageProcessHandler(parsedMessage);
+        };
     }
 
 
     componentWillUnmount () {
         if (socket) {
-            console.log('socket close');
             socket.close();
         }
     }
@@ -77,14 +78,46 @@ export default class RoomScreen extends Component {
                 <RTCView streamURL={this.state.videoURL} style={styles.videoContainer} />
 
                 <View style={styles.listContainer}>
-                    <UserList videoURL={this.state.videoURL} />
+                    <UserList videoURL={this.state.remoteURL} />
                 </View>
 
             </View>
         );
     }
 
+
+    messageProcessHandler(msg) {
+        console.log('message: ' + msg.id);
+        switch (msg.id) {
+            case 'existingParticipants':
+                startCommunication(sendMessage, 'zhangsan', (stream, pc) => {
+                    this.setState({ videoURL: stream.toURL() });
+                    pc.onaddstream = event => {
+                        console.log("fuckllll" + event.stream);
+                        this.setState({ remoteURL: event.stream.toURL() });
+                    };
+                });
+                break;
+            case 'newParticipantArrived':
+                break;
+            case 'participantLeft':
+                break;
+            case 'receiveVideoAnswer':
+                ProcessAnswer(msg.sdpAnswer, () => {
+
+                });
+                break;
+            case 'iceCandidate':
+                addIceCandidate(new RTCIceCandidate(msg.candidate));
+                break;
+            default:
+                console.error('Unrecognized message', msg.message);
+        }
+    }
+
 }
+
+
 
 const styles = StyleSheet.create({
     container: {
