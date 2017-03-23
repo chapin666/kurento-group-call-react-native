@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Router, Scene } from 'react-native-router-flux';
 
 import LoginScreen from './LoginScreen';
-import RoomScreen from './RoomScreen';
 import VideoScreen from './VideoScreen';
 
 export default class Main extends Component {
@@ -18,13 +17,6 @@ export default class Main extends Component {
                         animation='fade'
                         hideNavBar={true}
                         initial={true} 
-                    />
-
-                    <Scene
-                        key='roomScreen'
-                        component={RoomScreen}
-                        animation='fade'
-                        hideNavBar={true} 
                     />
 
                     <Scene

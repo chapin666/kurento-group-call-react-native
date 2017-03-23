@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
+import config from "../config/app";
 import { 
     View,
     StyleSheet,
-    Button
+    Button,
+    Image
 } from 'react-native';
 
 import {
@@ -12,7 +14,7 @@ import {
 } from 'react-native-webrtc';
 
 import { startCommunication, addIceCandidate, ProcessAnswer } from '../utils/webrtc-utils';
-import UserList from './UserList';
+import ReceiveScreen from './ReceiveScreen';
 
 const WSS_CLIENT_SERVER = 'ws://192.168.1.115:8080/groupcall';
 
@@ -34,6 +36,7 @@ export default class RoomScreen extends Component {
             videoURL: null,
             remoteURL: null,
         };
+
     }
 
     componentDidMount () {
@@ -74,13 +77,13 @@ export default class RoomScreen extends Component {
     render() {
         return (
             <View style={styles.container}>
+                
+                <RTCView zOrder={0} objectFit='cover' style={styles.videoContainer} streamURL={this.state.videoURL}  />
 
-                <RTCView streamURL={this.state.videoURL} style={styles.videoContainer} />
-
-                <View style={styles.listContainer}>
-                    <UserList videoURL={this.state.remoteURL} />
+                <View style={styles.floatView}>
+                    <ReceiveScreen videoURL={this.state.remoteURL} />
                 </View>
-
+                
             </View>
         );
     }
@@ -92,10 +95,13 @@ export default class RoomScreen extends Component {
             case 'existingParticipants':
                 startCommunication(sendMessage, 'zhangsan', (stream, pc) => {
                     this.setState({ videoURL: stream.toURL() });
-                    pc.onaddstream = event => {
-                        console.log("fuckllll" + event.stream);
-                        this.setState({ remoteURL: event.stream.toURL() });
-                    };
+                });
+                msg.data.forEach((participant) => {
+                    startCommunication(sendMessage, participant.name, (stream, pc) => {
+                        pc.onaddstream = event => {
+                            this.setState({ remoteURL: event.stream.toURL() });
+                        };
+                    });
                 });
                 break;
             case 'newParticipantArrived':
@@ -103,12 +109,14 @@ export default class RoomScreen extends Component {
             case 'participantLeft':
                 break;
             case 'receiveVideoAnswer':
-                ProcessAnswer(msg.sdpAnswer, () => {
-
+                ProcessAnswer(msg.name, msg.sdpAnswer, (err) => {
+                    if (err) {
+                        console.error('the error: ' + err);
+                    }
                 });
                 break;
             case 'iceCandidate':
-                addIceCandidate(new RTCIceCandidate(msg.candidate));
+                addIceCandidate(msg.name, new RTCIceCandidate(msg.candidate));
                 break;
             default:
                 console.error('Unrecognized message', msg.message);
@@ -121,16 +129,18 @@ export default class RoomScreen extends Component {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        justifyContent: 'center',
-        backgroundColor: '#F5FCFF'
+        flex: 1
     },
     videoContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center'
+        flex: 1
     },
-    listContainer: {
-        flex: 0.5
+    floatView: {
+        position: 'absolute',
+        width: 250,
+        height: 210,
+        bottom: 15,
+        right: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: 15
     }
 });

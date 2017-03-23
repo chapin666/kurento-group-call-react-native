@@ -7,13 +7,14 @@ import {
 } from 'react-native-webrtc';
 
 
-let pc = null;
+let pcArray = {};
 const ICE_CONFIG = { iceServers: [{ url: 'stun:47.91.149.159:3478' }] };
 
 
 export function startCommunication(_sendMessage, _name, callback) {
     getLocalStream(true, stream => {
         var pc = createPC(_sendMessage, _name, true, stream);
+        pcArray[_name] = pc;
         callback(stream, pc);
     });
 }
@@ -46,7 +47,7 @@ export function getLocalStream(isFront, callback) {
 }
 
 export function createPC(sendMessage, name, isOffer, localStream, callback) {
-    pc = new RTCPeerConnection(ICE_CONFIG);
+    var pc = new RTCPeerConnection(ICE_CONFIG);
 
     pc.onnegotiationneeded = () => {
         console.log('onnegotiationneeded');
@@ -94,23 +95,33 @@ export function createPC(sendMessage, name, isOffer, localStream, callback) {
 }
 
 
-export function addIceCandidate(candidate) {
-    console.log('received ICE');
+export function addIceCandidate(name, candidate) {
+    var pc  = pcArray[name];
     if (pc) {
         pc.addIceCandidate(candidate);
     } else {
-        console.log('pc.addIceCandidate failed');
+        console.log('pc.addIceCandidate failed : pc not exists');
     }
 }
 
-export function ProcessAnswer(sdp, callback) {
-    var answer = {
-        'type': 'answer',
-        'sdp': sdp
-    };
+export function ProcessAnswer(name, sdp, callback) {
+
+    var pc  = pcArray[name];
+
     if (pc) {
-        pc.setRemoteDescription(new RTCSessionDescription(answer));
-        callback();
+        var answer = {
+            'type': 'answer',
+            'sdp': sdp
+        };
+        if (pc) {
+            pc.setRemoteDescription(new RTCSessionDescription(answer), () => {
+                callback();
+            }, err => {
+                callback(err);
+            });
+        }
+    } else {
+        console.log('ProcessAnswer failed : pc not exists');
     }
 }
 
