@@ -6,12 +6,28 @@ import ButtonSubmit from './ButtonSubmit';
 
 export default class LoginScreen extends Component {
 
+    constructor() {
+        super();
+
+        this.state = {
+            username: null,
+            roomname: null,
+        };
+    }
+
+    
+
     render() {
         return (
             <Wallpager>
                 <Logo />
-                <Form />
-                <ButtonSubmit />
+                <Form 
+                    userNameChange={value => this.setState({username: value}) }
+                    roomNameChange={value => this.setState({roomname: value}) }/>
+
+                <ButtonSubmit 
+                    userNameValue={this.state.username}
+                    roomNameValue={this.state.roomname} />
             </Wallpager>
         );
     }

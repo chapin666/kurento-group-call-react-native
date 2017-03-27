@@ -9,6 +9,7 @@ import UserInput from './UserInput';
 import usernameImage from '../images/username.png';
 
 export default class Form extends Component {
+
     render() {
         return (
             <KeyboardAvoidingView behavior='padding' style={styles.container}>
@@ -16,19 +17,21 @@ export default class Form extends Component {
                 <UserInput
                     source={usernameImage}
                     secureTextEntry={false}
-                    placeholder='用户名'
+                    placeholder='用户昵称'
                     autoCapitalize={'none'}
                     returnKeyType={'done'}
-                    autoCorrect={false} 
+                    autoCorrect={false}
+                    callback={value => this.props.userNameChange(value)}
                 />
 
                 <UserInput
                     source={usernameImage}
                     secureTextEntry={false}
-                    placeholder='房间号'
+                    placeholder='房间号码'
                     returnKeyType={'done'}
                     autoCapitalize={'none'}
-                    autoCorrect={false} 
+                    autoCorrect={false}
+                    callback={value => this.props.roomNameChange(value)}
                 />
 
             </KeyboardAvoidingView>

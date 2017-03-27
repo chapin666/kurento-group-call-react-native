@@ -21,6 +21,7 @@ export default class ReceiveScreen extends Component {
             </View>
         )
     }
+    
 }
 
 

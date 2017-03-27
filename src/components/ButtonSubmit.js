@@ -15,6 +15,8 @@ import { Actions } from 'react-native-router-flux';
 
 import spinner from '../images/loading.gif';
 
+import Show from '../utils/toast-utils';
+
 const DEVICE_WIDTH = Dimensions.get('window').width;
 const MARGIN = 40;
 
@@ -33,6 +35,17 @@ export default class ButtonSubmit extends Component {
     }
 
     _onPress() {
+
+        if (this.props.userNameValue == null || this.props.userNameValue == '') {
+            Show('请输入用户昵称');
+            return;
+        }
+
+        if (this.props.roomNameValue == null || this.props.userNameValue == '') {
+            Show('请输入房间号码');
+            return;
+        }
+
         if (this.state.isLoading) return;
         
         this.setState({ isLoading: true });
@@ -44,7 +57,7 @@ export default class ButtonSubmit extends Component {
 
         setTimeout(() => this._onGrow(), 2000);
         setTimeout(() => {
-            Actions.videoScreen();
+            Actions.videoScreen({ userName: this.props.userNameValue, roomName: this.props.roomNameValue });
             this.setState({ isLoading: false });
             this.buttonAnimated.setValue(0);
             this.growAnimated.setValue(0);

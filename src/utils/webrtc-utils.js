@@ -34,8 +34,20 @@ export function getLocalStream(isFront, callback) {
         getUserMedia({
             audio: true,
             video: {
-                mandatory: {
-                    minFrameRate: 30
+                frameRate: {
+                    min: 1,
+                    ideal: 15,
+                    max: 30
+                },
+                width: {
+                    min: 32,
+                    ideal: 50,
+                    max: 320
+                },
+                height: {
+                    min: 32,
+                    ideal: 50,
+                    max: 320
                 }
             },
             facingMode: (isFront ? 'user' : 'environment'),

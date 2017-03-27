@@ -132,6 +132,7 @@ dependencies {
 
     // react-native-webrtc
     compile project(':WebRTCModule')
+    compile project(':react-native-idle-timer')
 
     // GIF Support
     // supports Android versions before Ice Cream Sandwich (API level 14)

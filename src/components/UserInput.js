@@ -23,7 +23,8 @@ export default class UserInput extends Component {
                     autoCapitalize={this.props.autoCapitalize}
                     returnKeyType={this.props.returnKeyType}
                     placeholderTextColor='white'
-                    underlineColorAndroid='transparent' 
+                    underlineColorAndroid='transparent'
+                    onChangeText={(text) => this.props.callback(text)}
                 />
             </View>
         );

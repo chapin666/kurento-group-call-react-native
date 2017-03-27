@@ -4,7 +4,9 @@ import {
     View,
     StyleSheet,
     Button,
-    Image
+    Image,
+    BackAndroid,
+    ToastAndroid
 } from 'react-native';
 
 import {
@@ -15,6 +17,8 @@ import {
 
 import { startCommunication, addIceCandidate, ProcessAnswer } from '../utils/webrtc-utils';
 import ReceiveScreen from './ReceiveScreen';
+
+import IdleTimerManager from 'react-native-idle-timer';
 
 const WSS_CLIENT_SERVER = 'ws://192.168.1.115:8080/groupcall';
 
@@ -27,16 +31,20 @@ function sendMessage(message) {
     }
 }
 
-export default class RoomScreen extends Component {
+export default class VideoScreen extends Component {
 
-    constructor() {
+    constructor(params) {
         super();
 
         this.state = {
             videoURL: null,
             remoteURL: null,
+            userName: params.userName,
+            roomName: params.roomName
         };
 
+        this.userName = params.userName,
+        this.roomName = params.roomName
     }
 
     componentDidMount () {
@@ -48,8 +56,8 @@ export default class RoomScreen extends Component {
         socket.onopen = () => {
             var message = {
                 id : 'joinRoom',
-                name : 'zhangsan',
-                room : '8888',
+                name : this.state.userName,
+                room : this.state.roomName,
                 presenter: true
             };
             sendMessage(message);
@@ -64,14 +72,38 @@ export default class RoomScreen extends Component {
             var parsedMessage = JSON.parse(message.data);
             this.messageProcessHandler(parsedMessage);
         };
+
+    }
+
+
+    componentWillMount() {
+        BackAndroid.addEventListener('hardwareBackPress', this.onBackAndroid);
+        IdleTimerManager.setIdleTimerDisabled(true);
     }
 
 
     componentWillUnmount () {
+        IdleTimerManager.setIdleTimerDisabled(false);
+        BackAndroid.removeEventListener('hardwareBackPress', this.onBackAndroid);
         if (socket) {
+            sendMessage({
+                id: 'leaveRoom'
+            });
             socket.close();
         }
     }
+
+    onBackAndroid = () => {    
+        if (this.lastBackPressed && this.lastBackPressed + 2000 >= Date.now()) {
+            BackAndroid.exitApp();
+        }
+
+        this.lastBackPressed = Date.now();
+        ToastAndroid.show('再按一次退出应用', ToastAndroid.SHORT);
+        return true;
+    };
+
+
     
 
     render() {
@@ -93,7 +125,7 @@ export default class RoomScreen extends Component {
         console.log('message: ' + msg.id);
         switch (msg.id) {
             case 'existingParticipants':
-                startCommunication(sendMessage, 'zhangsan', (stream, pc) => {
+                startCommunication(sendMessage, this.state.userName, (stream, pc) => {
                     this.setState({ videoURL: stream.toURL() });
                 });
                 msg.data.forEach((participant) => {
@@ -107,6 +139,7 @@ export default class RoomScreen extends Component {
             case 'newParticipantArrived':
                 break;
             case 'participantLeft':
+
                 break;
             case 'receiveVideoAnswer':
                 ProcessAnswer(msg.name, msg.sdpAnswer, (err) => {
