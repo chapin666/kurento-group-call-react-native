@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import config from "../config/app";
 import { 
     View,
     StyleSheet,
@@ -15,13 +14,24 @@ import {
     RTCIceCandidate
 } from 'react-native-webrtc';
 
-import { startCommunication, addIceCandidate, ProcessAnswer } from '../utils/webrtc-utils';
+import { 
+    startCommunication, 
+    receiveVideo,
+    addIceCandidate, 
+    ProcessAnswer
+} from '../utils/webrtc-utils';
+
+import config from "../config/app";
+
 import ReceiveScreen from './ReceiveScreen';
 
-import IdleTimerManager from 'react-native-idle-timer';
+import Display from 'react-native-display';
 
-const WSS_CLIENT_SERVER = 'ws://192.168.1.115:8080/groupcall';
+import InCallManager from 'react-native-incall-manager';
 
+const participants = {};
+
+const WSS_CLIENT_SERVER = 'ws://47.91.149.159:8081/groupcall';
 let socket = null;
 
 function sendMessage(message) {
@@ -48,6 +58,9 @@ export default class VideoScreen extends Component {
     }
 
     componentDidMount () {
+
+        InCallManager.setSpeakerphoneOn(true);
+        InCallManager.setKeepScreenOn(true);
 
         socket = new WebSocket(WSS_CLIENT_SERVER, {
             rejectUnauthorized: false
@@ -78,23 +91,22 @@ export default class VideoScreen extends Component {
 
     componentWillMount() {
         BackAndroid.addEventListener('hardwareBackPress', this.onBackAndroid);
-        IdleTimerManager.setIdleTimerDisabled(true);
     }
 
 
     componentWillUnmount () {
-        IdleTimerManager.setIdleTimerDisabled(false);
         BackAndroid.removeEventListener('hardwareBackPress', this.onBackAndroid);
         if (socket) {
-            sendMessage({
-                id: 'leaveRoom'
-            });
+            console.log('socket closed');
             socket.close();
         }
     }
 
     onBackAndroid = () => {    
         if (this.lastBackPressed && this.lastBackPressed + 2000 >= Date.now()) {
+            sendMessage({
+                id: 'leaveRoom'
+            });
             BackAndroid.exitApp();
         }
 
@@ -104,42 +116,50 @@ export default class VideoScreen extends Component {
     };
 
 
-    
-
     render() {
         return (
             <View style={styles.container}>
                 
                 <RTCView zOrder={0} objectFit='cover' style={styles.videoContainer} streamURL={this.state.videoURL}  />
 
-                <View style={styles.floatView}>
-                    <ReceiveScreen videoURL={this.state.remoteURL} />
-                </View>
-                
+                <Display enable={this.state.remoteURL != null}>
+                    <View style={styles.floatView}>
+                        <ReceiveScreen videoURL={this.state.remoteURL} />
+                    </View>
+                </Display>
             </View>
         );
     }
 
 
     messageProcessHandler(msg) {
-        console.log('message: ' + msg.id);
         switch (msg.id) {
             case 'existingParticipants':
-                startCommunication(sendMessage, this.state.userName, (stream, pc) => {
+                startCommunication(sendMessage, this.state.userName, (stream) => {
                     this.setState({ videoURL: stream.toURL() });
                 });
+
                 msg.data.forEach((participant) => {
-                    startCommunication(sendMessage, participant.name, (stream, pc) => {
-                        pc.onaddstream = event => {
+                    participants[participant.name] = participant.name;
+                    receiveVideo(sendMessage, participant.name, (stream, pc) => {
+                        pc.onaddstream = (event) => {
                             this.setState({ remoteURL: event.stream.toURL() });
                         };
                     });
                 });
                 break;
             case 'newParticipantArrived':
+                participants[msg.name] = msg.name;            
+                if (this.state.remoteURL == null || this.state.remoteURL === '') {
+                    receiveVideo(sendMessage, msg.name, (stream, pc) => {
+                        pc.onaddstream = (event) => {
+                            this.setState({ remoteURL: event.stream.toURL() });
+                        };
+                    });
+                }
                 break;
             case 'participantLeft':
-
+                this.participantLeft(msg.name);   
                 break;
             case 'receiveVideoAnswer':
                 ProcessAnswer(msg.name, msg.sdpAnswer, (err) => {
@@ -156,8 +176,24 @@ export default class VideoScreen extends Component {
         }
     }
 
-}
+    /**
+     *  partipant leave
+     * 
+     * @param {*} name 
+     */
+    participantLeft(name) {
+        if (participants[name]) {
+            delete participants[name];
+        }
 
+        if (Object.keys(participants).length == 0) {
+            this.setState({
+                remoteURL: null
+            });
+        }
+    }
+
+}
 
 
 const styles = StyleSheet.create({

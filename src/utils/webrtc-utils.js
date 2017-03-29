@@ -8,24 +8,42 @@ import {
 
 
 let pcArray = {};
-const ICE_CONFIG = { iceServers: [{ url: 'stun:47.91.149.159:3478' }] };
-
+const ICE_CONFIG = { 'iceServers': [{ url: 'stun:47.91.149.159:3478' }] };
 
 export function startCommunication(_sendMessage, _name, callback) {
-    getLocalStream(true, stream => {
-        var pc = createPC(_sendMessage, _name, true, stream);
+    getStream(true, stream => {
+        let options = {
+            mandatory: {
+                OfferToReceiveAudio: false,
+                OfferToReceiveVideo: false
+            }
+        };
+        var pc = createPC(_sendMessage, _name, true, stream, options);
         pcArray[_name] = pc;
         callback(stream, pc);
     });
 }
 
+export function receiveVideo(_sendMessae, _name, callback) {
+    getStream(true, stream => {
+        let options = {
+            mandatory: {
+                OfferToReceiveAudio: true,
+                OfferToReceiveVideo: true
+            }
+        };
+        var pc = createPC(_sendMessae, _name, true, stream, options);
+        pcArray[_name] = pc;
+        callback(stream, pc);
+    });
+}
 
-export function getLocalStream(isFront, callback) {
+export function getStream(isFront, callback) {
     MediaStreamTrack.getSources(sourceInfos => {
         let videoSourceId;
         for (let i = 0; i < sourceInfos.length; i++) {
             const sourceInfo = sourceInfos[i];
-            if (sourceInfo.kind === 'video' && sourceInfo.facing === (isFront ? 'front' : 'back')) {
+            if (sourceInfo.kind == 'video' && sourceInfo.facing == (isFront ? 'front' : 'back')) {
                 videoSourceId = sourceInfo.id;
                 break;
             }
@@ -53,12 +71,17 @@ export function getLocalStream(isFront, callback) {
             facingMode: (isFront ? 'user' : 'environment'),
             optional: (videoSourceId ? [{ sourceId: videoSourceId }] : [])
         }, (stream) => {
+            console.log('fuck');
+            stream.getAudioTracks().forEach((track) => {
+                console.log(track);
+            });
             callback(stream);
         }, logError);
     });
-}
+};
 
-export function createPC(sendMessage, name, isOffer, localStream, callback) {
+
+export function createPC(sendMessage, name, isOffer, localStream, options) {
     var pc = new RTCPeerConnection(ICE_CONFIG);
 
     pc.onnegotiationneeded = () => {
@@ -100,7 +123,7 @@ export function createPC(sendMessage, name, isOffer, localStream, callback) {
                 };
                 sendMessage(msg);
             }, logError);
-        }, logError);
+        }, logError, options);
     }
 
     return pc;

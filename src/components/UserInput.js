@@ -61,6 +61,8 @@ const styles = StyleSheet.create({
         width: DEVICE_WIDTH - 40,
         height: 40,
         marginHorizontal: 20,
+        fontWeight: 'bold',
+        fontSize: 14,
         paddingLeft: 45,
         borderRadius: 20,
         color: '#ffffff',

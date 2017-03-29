@@ -15,6 +15,30 @@ export default class LoginScreen extends Component {
         };
     }
 
+    /*componentDidMount () {
+        if (InCallManager.recordPermission !== 'granted') {
+            InCallManager.requestRecordPermission()
+            .then((requestedRecordPermissionResult) => {
+                console.log("InCallManager.requestRecordPermission() requestedRecordPermissionResult: ", requestedRecordPermissionResult);
+            })
+            .catch((err) => {
+                console.log("InCallManager.requestRecordPermission() catch: ", err);
+            });
+        }
+
+        if (InCallManager.cameraPermission !== 'granted') {
+            InCallManager.requestCameraPermission()
+            .then((requestedCameraPermissionResult) => {
+                console.log("InCallManager.requestCameraPermission() requestedCameraPermissionResult: ", requestedCameraPermissionResult);
+            })
+            .catch((err) => {
+                console.log("InCallManager.requestCameraPermission() catch: ", err);
+            });
+        }
+
+    }*/
+    
+
     
 
     render() {
