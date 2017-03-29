@@ -71,7 +71,6 @@ export function getStream(isFront, callback) {
             facingMode: (isFront ? 'user' : 'environment'),
             optional: (videoSourceId ? [{ sourceId: videoSourceId }] : [])
         }, (stream) => {
-            console.log('fuck');
             stream.getAudioTracks().forEach((track) => {
                 console.log(track);
             });
@@ -81,7 +80,7 @@ export function getStream(isFront, callback) {
 };
 
 
-export function createPC(sendMessage, name, isOffer, localStream, options) {
+export function createPC(sendMessage, name, isOffer, partipantStream, options) {
     var pc = new RTCPeerConnection(ICE_CONFIG);
 
     pc.onnegotiationneeded = () => {
@@ -104,13 +103,18 @@ export function createPC(sendMessage, name, isOffer, localStream, options) {
 
     pc.oniceconnectionstatechange = (event) => {
         console.log('oniceconnectionstatechange:', event.target.iceConnectionState);
+        if (event.target.iceConnectionState === 'disconnected') {
+            partipantStream.release();
+            pc.close();
+        }
     };
 
     pc.onsignalingstatechange = (event) => {
         console.log('onsignalingstatechange: ', event.target.signalingState);
     };
 
-    pc.addStream(localStream);
+    pc.addStream(partipantStream);
+    
 
     function createOffer() {
         pc.createOffer(desc => {
@@ -160,7 +164,13 @@ export function ProcessAnswer(name, sdp, callback) {
     }
 }
 
+export function ReleaseMeidaSource() {
+    pcArray = {};
+
+}
+
 
 function logError(error) {
     console.log('logError', error);
 }
+

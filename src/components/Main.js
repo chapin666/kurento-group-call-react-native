@@ -4,6 +4,11 @@ import { Router, Scene } from 'react-native-router-flux';
 import LoginScreen from './LoginScreen';
 import VideoScreen from './VideoScreen';
 
+const onExitApp = () => {
+    console.log('qnmllb');
+}
+
+
 export default class Main extends Component {
     
     render() {

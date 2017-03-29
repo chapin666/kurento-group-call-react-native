@@ -18,7 +18,8 @@ import {
     startCommunication, 
     receiveVideo,
     addIceCandidate, 
-    ProcessAnswer
+    ProcessAnswer,
+    ReleaseMeidaSource
 } from '../utils/webrtc-utils';
 
 import config from "../config/app";
@@ -28,6 +29,9 @@ import ReceiveScreen from './ReceiveScreen';
 import Display from 'react-native-display';
 
 import InCallManager from 'react-native-incall-manager';
+
+import { Actions } from 'react-native-router-flux';
+
 
 const participants = {};
 
@@ -53,9 +57,10 @@ export default class VideoScreen extends Component {
             roomName: params.roomName
         };
 
-        this.userName = params.userName,
-        this.roomName = params.roomName
+        this.userName = params.userName;
+        this.roomName = params.roomName;
     }
+
 
     componentDidMount () {
 
@@ -102,12 +107,15 @@ export default class VideoScreen extends Component {
         }
     }
 
-    onBackAndroid = () => {    
+    onBackAndroid = () => {  
         if (this.lastBackPressed && this.lastBackPressed + 2000 >= Date.now()) {
             sendMessage({
                 id: 'leaveRoom'
             });
+            participants = {};
+            ReleaseMeidaSource();
             BackAndroid.exitApp();
+            return false;
         }
 
         this.lastBackPressed = Date.now();
@@ -143,6 +151,7 @@ export default class VideoScreen extends Component {
                     participants[participant.name] = participant.name;
                     receiveVideo(sendMessage, participant.name, (stream, pc) => {
                         pc.onaddstream = (event) => {
+                            console.log('url====' + event.stream.toURL());
                             this.setState({ remoteURL: event.stream.toURL() });
                         };
                     });

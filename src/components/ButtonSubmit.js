@@ -73,6 +73,7 @@ export default class ButtonSubmit extends Component {
     }
 
     render() {
+        
         const changeWidth = this.buttonAnimated.interpolate({
             inputRange: [0, 1],
             outputRange: [DEVICE_WIDTH - MARGIN, MARGIN]
