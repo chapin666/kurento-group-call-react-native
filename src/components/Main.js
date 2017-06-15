@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { Router, Scene } from 'react-native-router-flux';
 
-import LoginScreen from './LoginScreen';
-import VideoScreen from './VideoScreen';
+import LoginScreen from './login/LoginScreen';
+import VideoScreen from './room/VideoScreen';
+
 
 const onExitApp = () => {
     console.log('qnmllb');

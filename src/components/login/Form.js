@@ -6,7 +6,7 @@ import {
 
 import UserInput from './UserInput';
 
-import usernameImage from '../images/username.png';
+import usernameImage from '../../images/username.png';
 
 export default class Form extends Component {
 

@@ -13,9 +13,9 @@ import {
 
 import { Actions } from 'react-native-router-flux';
 
-import spinner from '../images/loading.gif';
+import spinner from '../../images/loading.gif';
 
-import Show from '../utils/toast-utils';
+import Show from '../../utils/toast-utils';
 
 const DEVICE_WIDTH = Dimensions.get('window').width;
 const MARGIN = 40;

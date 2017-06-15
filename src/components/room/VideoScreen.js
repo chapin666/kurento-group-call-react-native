@@ -20,9 +20,9 @@ import {
     addIceCandidate, 
     ProcessAnswer,
     ReleaseMeidaSource
-} from '../utils/webrtc-utils';
+} from '../../utils/webrtc-utils';
 
-import config from "../config/app";
+import config from "../../config/app";
 
 import ReceiveScreen from './ReceiveScreen';
 
@@ -140,6 +140,10 @@ export default class VideoScreen extends Component {
     }
 
 
+    /**
+     * 
+     * @param {*} msg 
+     */
     messageProcessHandler(msg) {
         switch (msg.id) {
             case 'existingParticipants':

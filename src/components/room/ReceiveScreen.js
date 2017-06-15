@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import config from "../config/app.js";
+import config from "../../config/app.js";
 import { 
     View,
     Text,
