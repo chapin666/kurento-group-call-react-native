@@ -8,7 +8,7 @@ import {
 
 
 let pcArray = {};
-const ICE_CONFIG = { 'iceServers': [{ url: 'stun:47.91.149.159:3478' }] };
+const ICE_CONFIG = { 'iceServers': [{ url: 'stun:54.223.104.239:3478' }] };
 
 export function startCommunication(_sendMessage, _name, callback) {
     getStream(true, stream => {
@@ -66,10 +66,9 @@ export function getStream(isFront, callback) {
                     min: 32,
                     ideal: 50,
                     max: 320
-                }
-            },
-            facingMode: (isFront ? 'user' : 'environment'),
-            optional: (videoSourceId ? [{ sourceId: videoSourceId }] : [])
+                },
+                optional: (videoSourceId ? [{ sourceId: videoSourceId }] : [])
+            }
         }, (stream) => {
             stream.getAudioTracks().forEach((track) => {
                 console.log(track);
@@ -95,7 +94,7 @@ export function createPC(sendMessage, name, isOffer, partipantStream, options) {
             var msg = {
                 'id': 'onIceCandidate',
                 'candidate': event.candidate,
-                'name': name
+                'sender': name
             };
             sendMessage(msg);
         }

@@ -14,17 +14,7 @@ import {
     RTCIceCandidate
 } from 'react-native-webrtc';
 
-import { 
-    startCommunication, 
-    receiveVideo,
-    addIceCandidate, 
-    ProcessAnswer,
-    ReleaseMeidaSource
-} from '../../utils/webrtc-utils';
 
-import config from "../../config/app";
-
-import ReceiveScreen from './ReceiveScreen';
 
 import Display from 'react-native-display';
 
@@ -33,15 +23,33 @@ import InCallManager from 'react-native-incall-manager';
 import { Actions } from 'react-native-router-flux';
 
 
+import io from 'socket.io-client';
+
+import config from "../../config/app";
+
+import { 
+    startCommunication, 
+    receiveVideo,
+    addIceCandidate, 
+    ProcessAnswer,
+    ReleaseMeidaSource
+} from '../../utils/webrtc-utils';
+
+
+import ReceiveScreen from './ReceiveScreen';
+
+
 const participants = {};
 
-const WSS_CLIENT_SERVER = 'ws://47.91.149.159:8081/groupcall';
+const WSS_CLIENT_SERVER = 'https://yourip:3000';
+
 let socket = null;
 
+
 function sendMessage(message) {
-    var jsonMessage = JSON.stringify(message);
     if (socket) {
-	    socket.send(jsonMessage);
+        console.log('send message :' + message.id);
+	    socket.emit('message', message);
     }
 }
 
@@ -67,30 +75,26 @@ export default class VideoScreen extends Component {
         InCallManager.setSpeakerphoneOn(true);
         InCallManager.setKeepScreenOn(true);
 
-        socket = new WebSocket(WSS_CLIENT_SERVER, {
-            rejectUnauthorized: false
+        socket = io.connect(WSS_CLIENT_SERVER,  {
+            transports: ['websocket']
         });
 
-        socket.onopen = () => {
+        socket.on('connect_error', (err) => {
+            console.log(err);
+        });
+
+        socket.on('connect', () => {
             var message = {
                 id : 'joinRoom',
                 name : this.state.userName,
-                room : this.state.roomName,
-                presenter: true
+                roomName : this.state.roomName
             };
             sendMessage(message);
-        };
+        });
 
-        socket.onerror = (err) => {
-            console.log(err);
-        };
-
-
-        socket.onmessage = message => {
-            var parsedMessage = JSON.parse(message.data);
-            this.messageProcessHandler(parsedMessage);
-        };
-
+        socket.on('message', message=> {
+            this.messageProcessHandler(message);
+        });
     }
 
 
@@ -155,7 +159,6 @@ export default class VideoScreen extends Component {
                     participants[participant.name] = participant.name;
                     receiveVideo(sendMessage, participant.name, (stream, pc) => {
                         pc.onaddstream = (event) => {
-                            console.log('url====' + event.stream.toURL());
                             this.setState({ remoteURL: event.stream.toURL() });
                         };
                     });
