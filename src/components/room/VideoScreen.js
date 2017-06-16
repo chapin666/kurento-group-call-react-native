@@ -153,21 +153,21 @@ export default class VideoScreen extends Component {
             case 'existingParticipants':
                 startCommunication(sendMessage, this.state.userName, (stream) => {
                     this.setState({ videoURL: stream.toURL() });
-                });
 
-                msg.data.forEach((participant) => {
-                    participants[participant.name] = participant.name;
-                    receiveVideo(sendMessage, participant.name, (stream, pc) => {
-                        pc.onaddstream = (event) => {
-                            this.setState({ remoteURL: event.stream.toURL() });
-                        };
+                    msg.data.forEach((name) => {
+                        participants[name] = name;
+                        receiveVideo(sendMessage, name, (pc) => {
+                            pc.onaddstream = (event) => {
+                                this.setState({ remoteURL: event.stream.toURL() });
+                            };
+                        });
                     });
                 });
                 break;
             case 'newParticipantArrived':
                 participants[msg.name] = msg.name;            
                 if (this.state.remoteURL == null || this.state.remoteURL === '') {
-                    receiveVideo(sendMessage, msg.name, (stream, pc) => {
+                    receiveVideo(sendMessage, msg.name, (pc) => {
                         pc.onaddstream = (event) => {
                             this.setState({ remoteURL: event.stream.toURL() });
                         };
