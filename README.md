@@ -4,15 +4,15 @@
 
 **Login Page**
 
-![Alt text](/screenshot/01.png)
+![Alt text](/01.png)
 
 **The First participant**
 
-![Alt text](/screenshot/02.png)
+![Alt text](/02.png)
 
 **The second participant**
 
-![Alt text](/screenshot/03.png)
+![Alt text](/03.png)
 
 ### IOS
 
